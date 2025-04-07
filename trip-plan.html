@@ -1,0 +1,353 @@
+<!-- Add this before the closing </body> tag -->
+
+<!-- AI Recommendation Engine Modal -->
+<div id="aiRecommendationModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[80vh] overflow-hidden relative">
+      <button id="closeRecommendationModal" class="absolute top-4 right-4 z-10 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg">
+        <i class="fas fa-times text-gray-700"></i>
+      </button>
+      <div class="h-full flex flex-col">
+        <div class="p-6 border-b border-gray-200">
+          <h3 class="font-display font-bold text-2xl">AI Recommendations</h3>
+          <p class="text-gray-600">Based on your interests and travel dates</p>
+        </div>
+        <div class="flex-1 overflow-y-auto p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Recommendation cards will be dynamically inserted here -->
+          </div>
+        </div>
+        <div class="p-4 border-t border-gray-200 bg-gray-50">
+          <button id="refreshRecommendations" class="bg-primary hover:bg-opacity-90 text-white font-bold px-6 py-3 rounded-full transition-all transform hover:scale-105 shadow-lg">
+            <i class="fas fa-sync-alt mr-2"></i> Get New Recommendations
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Interactive Map Container -->
+  <div id="interactiveMap" class="fixed inset-0 z-40 bg-white hidden">
+    <div class="absolute top-4 right-4 z-50">
+      <button id="closeMap" class="bg-white hover:bg-gray-100 p-3 rounded-full shadow-lg">
+        <i class="fas fa-times text-gray-700"></i>
+      </button>
+    </div>
+    <div id="map" class="h-full w-full"></div>
+    <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white rounded-full shadow-lg p-2">
+      <div class="flex space-x-2">
+        <button class="map-filter active" data-filter="all">All</button>
+        <button class="map-filter" data-filter="beaches">Beaches</button>
+        <button class="map-filter" data-filter="heritage">Heritage</button>
+        <button class="map-filter" data-filter="wildlife">Wildlife</button>
+        <button class="map-filter" data-filter="hiking">Hiking</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- New Scripts -->
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Initialize interactive map
+    let map;
+    function initMap() {
+      map = L.map('map').setView([7.8731, 80.7718], 7); // Center on Sri Lanka
+      
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
+      
+      // Sample markers (would be dynamic in production)
+      const locations = [
+        {
+          name: "Sigiriya Rock",
+          coords: [7.9570, 80.7603],
+          type: "heritage",
+          icon: "landmark"
+        },
+        {
+          name: "Unawatuna Beach",
+          coords: [6.0167, 80.2500],
+          type: "beaches",
+          icon: "umbrella-beach"
+        },
+        // More locations would be added
+      ];
+      
+      locations.forEach(loc => {
+        const marker = L.marker(loc.coords).addTo(map);
+        marker.bindPopup(`
+          <div class="map-popup">
+            <h4 class="font-bold">${loc.name}</h4>
+            <div class="flex items-center text-sm text-gray-600 mb-2">
+              <i class="fas fa-${loc.icon} mr-2"></i>
+              ${loc.type.charAt(0).toUpperCase() + loc.type.slice(1)}
+            </div>
+            <button class="view-details-btn" data-location="${loc.name}">
+              View Details
+            </button>
+          </div>
+        `);
+        
+        // Store type for filtering
+        marker._type = loc.type;
+      });
+      
+      // Map filter controls
+      document.querySelectorAll('.map-filter').forEach(btn => {
+        btn.addEventListener('click', function() {
+          document.querySelectorAll('.map-filter').forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+          
+          const filter = this.dataset.filter;
+          map.eachLayer(layer => {
+            if (layer instanceof L.Marker) {
+              if (filter === 'all' || layer._type === filter) {
+                map.addLayer(layer);
+              } else {
+                map.removeLayer(layer);
+              }
+            }
+          });
+        });
+      });
+    }
+    
+    // Toggle map visibility
+    document.getElementById('showMapBtn').addEventListener('click', () => {
+      document.getElementById('interactiveMap').classList.remove('hidden');
+      if (!map) {
+        initMap();
+      }
+    });
+    
+    document.getElementById('closeMap').addEventListener('click', () => {
+      document.getElementById('interactiveMap').classList.add('hidden');
+    });
+    
+    // AI Recommendation Engine
+    function generateRecommendations() {
+      const interests = Array.from(document.querySelectorAll('.interest-card input:checked'))
+        .map(el => el.closest('.interest-card').querySelector('h3').textContent);
+      
+      const duration = document.getElementById('durationDisplay').textContent;
+      const dateRange = `${document.getElementById('arrivalDate').value} to ${document.getElementById('departureDate').value}`;
+      
+      // In a real app, this would call an AI API
+      const sampleRecommendations = [
+        {
+          title: "Cultural Triangle Expedition",
+          description: "5-day journey through Sri Lanka's ancient cities including Sigiriya, Polonnaruwa and Anuradhapura",
+          rating: 4.8,
+          type: "heritage",
+          image: "https://example.com/sigiriya.jpg",
+          duration: "5 days",
+          price: "$$$"
+        },
+        // More recommendations would be generated
+      ];
+      
+      const container = document.querySelector('#aiRecommendationModal .grid');
+      container.innerHTML = '';
+      
+      sampleRecommendations.forEach(rec => {
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-xl shadow-md overflow-hidden border border-gray-200';
+        card.innerHTML = `
+          <div class="h-48 bg-gray-200 relative overflow-hidden">
+            <img src="${rec.image}" alt="${rec.title}" class="w-full h-full object-cover">
+            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+              <span class="bg-${getTypeColor(rec.type)} text-white px-2 py-1 rounded-full text-xs">${rec.type}</span>
+            </div>
+          </div>
+          <div class="p-4">
+            <h4 class="font-bold text-lg mb-1">${rec.title}</h4>
+            <div class="flex items-center mb-2">
+              ${generateStars(rec.rating)}
+              <span class="text-sm text-gray-600 ml-2">${rec.rating}</span>
+            </div>
+            <p class="text-gray-600 text-sm mb-3">${rec.description}</p>
+            <div class="flex justify-between items-center">
+              <span class="text-sm font-medium">${rec.duration} • ${rec.price}</span>
+              <button class="bg-primary hover:bg-opacity-90 text-white px-4 py-2 rounded-full text-sm transition-all">
+                Add to Plan
+              </button>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+    
+    function getTypeColor(type) {
+      const colors = {
+        heritage: 'amber',
+        beaches: 'blue',
+        wildlife: 'green',
+        hiking: 'purple',
+        culture: 'red'
+      };
+      return colors[type] || 'primary';
+    }
+    
+    function generateStars(rating) {
+      const fullStars = Math.floor(rating);
+      const hasHalfStar = rating % 1 >= 0.5;
+      let stars = '';
+      
+      for (let i = 0; i < fullStars; i++) {
+        stars += '<i class="fas fa-star text-yellow-400"></i>';
+      }
+      
+      if (hasHalfStar) {
+        stars += '<i class="fas fa-star-half-alt text-yellow-400"></i>';
+      }
+      
+      const emptyStars = 5 - Math.ceil(rating);
+      for (let i = 0; i < emptyStars; i++) {
+        stars += '<i class="far fa-star text-yellow-400"></i>';
+      }
+      
+      return stars;
+    }
+    
+    // Recommendation modal controls
+    document.getElementById('aiRecommendationsBtn').addEventListener('click', () => {
+      const modal = document.getElementById('aiRecommendationModal');
+      generateRecommendations();
+      modal.classList.remove('pointer-events-none');
+      modal.classList.add('pointer-events-auto');
+      modal.classList.remove('opacity-0');
+      modal.classList.add('opacity-100');
+    });
+    
+    document.getElementById('closeRecommendationModal').addEventListener('click', () => {
+      const modal = document.getElementById('aiRecommendationModal');
+      modal.classList.add('pointer-events-none');
+      modal.classList.add('opacity-0');
+      modal.classList.remove('opacity-100');
+      modal.classList.remove('pointer-events-auto');
+    });
+    
+    document.getElementById('refreshRecommendations').addEventListener('click', generateRecommendations);
+    
+    // Weather forecast chart
+    function generateWeatherForecast() {
+      const ctx = document.getElementById('weatherChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
+          datasets: [{
+            label: 'Temperature (°C)',
+            data: [32, 33, 31, 30, 29, 31, 32],
+            borderColor: '#FF7A45',
+            backgroundColor: 'rgba(255, 122, 69, 0.1)',
+            tension: 0.3,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `${context.dataset.label}: ${context.raw}°C`;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: false,
+              min: 25,
+              max: 35
+            }
+          }
+        }
+      });
+    }
+    
+    // Initialize when step 2 is active
+    const weatherObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (!mutation.target.classList.contains('hidden')) {
+          generateWeatherForecast();
+          weatherObserver.disconnect();
+        }
+      });
+    });
+    
+    weatherObserver.observe(document.getElementById('step2'), {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+    
+    // Add this to the travel dates section
+    <div class="mt-6">
+      <h4 class="font-bold text-lg mb-3">Expected Weather</h4>
+      <div class="bg-white rounded-lg p-4 shadow-sm">
+        <canvas id="weatherChart" height="150"></canvas>
+      </div>
+      <p class="text-sm text-gray-600 mt-2">Based on historical data for your travel period</p>
+    </div>
+    
+    <!-- Add this button to the form navigation -->
+    <button id="aiRecommendationsBtn" type="button" class="bg-accent hover:bg-opacity-90 text-dark font-bold px-6 py-3 rounded-full transition-all transform hover:scale-105 shadow-lg">
+      <i class="fas fa-robot mr-2"></i> Get AI Recommendations
+    </button>
+    
+    <!-- Add this button to show the interactive map -->
+    <button id="showMapBtn" type="button" class="bg-white border border-primary text-primary hover:bg-primary hover:text-white font-bold px-6 py-3 rounded-full transition-all transform hover:scale-105 shadow-lg">
+      <i class="fas fa-map-marked-alt mr-2"></i> Explore Map
+    </button>
+  </script>
+  
+  <!-- Add this CSS for the new components -->
+  <style>
+    .map-popup {
+      min-width: 200px;
+      padding: 8px;
+    }
+    
+    .map-popup h4 {
+      margin-bottom: 4px;
+    }
+    
+    .view-details-btn {
+      display: inline-block;
+      background-color: #005B4E;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+    
+    .map-filter {
+      padding: 6px 12px;
+      background-color: white;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .map-filter.active {
+      background-color: #005B4E;
+      color: white;
+    }
+    
+    .map-filter:not(.active):hover {
+      background-color: #f3f4f6;
+    }
+    
+    #weatherChart {
+      width: 100% !important;
+      height: 150px !important;
+    }
+  </style>

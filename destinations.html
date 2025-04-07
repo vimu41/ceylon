@@ -1,0 +1,300 @@
+<!-- Add this right before the closing </body> tag, after the existing scripts -->
+
+<!-- 3D Destination Preview Modal -->
+<div id="destinationModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] overflow-hidden relative">
+      <button id="closeModal" class="absolute top-4 right-4 z-10 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg">
+        <i class="fas fa-times text-gray-700"></i>
+      </button>
+      <div class="grid grid-cols-1 lg:grid-cols-2 h-full">
+        <div id="modal3DView" class="h-full w-full bg-gray-100">
+          <!-- 3D view will be rendered here -->
+        </div>
+        <div class="p-8 overflow-y-auto">
+          <h3 id="modalTitle" class="font-display font-bold text-3xl mb-4">Sigiriya Rock Fortress</h3>
+          <div class="flex items-center mb-6">
+            <div class="flex items-center mr-4">
+              <i class="fas fa-clock text-primary mr-2"></i>
+              <span>4-6 hours</span>
+            </div>
+            <div class="flex items-center">
+              <i class="fas fa-walking text-primary mr-2"></i>
+              <span>Moderate difficulty</span>
+            </div>
+          </div>
+          <p id="modalDescription" class="text-gray-700 mb-6">
+            The ancient rock fortress of Sigiriya, a UNESCO World Heritage Site, rises dramatically 200 meters above the surrounding plain. Known as the "Lion Rock," this 5th-century citadel features remarkable frescoes, landscaped gardens, and panoramic views.
+          </p>
+          <div class="mb-6">
+            <h4 class="font-bold text-lg mb-2">Best Time to Visit</h4>
+            <div class="flex items-center">
+              <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+              <span>January to April: Dry season with clear skies</span>
+            </div>
+          </div>
+          <div class="mb-6">
+            <h4 class="font-bold text-lg mb-2">Nearby Attractions</h4>
+            <div class="flex flex-wrap gap-2">
+              <span class="bg-gray-100 px-3 py-1 rounded-full text-sm">Dambulla Cave Temple</span>
+              <span class="bg-gray-100 px-3 py-1 rounded-full text-sm">Minneriya National Park</span>
+              <span class="bg-gray-100 px-3 py-1 rounded-full text-sm">Pidurangala Rock</span>
+            </div>
+          </div>
+          <button class="bg-primary hover:bg-opacity-90 text-white font-bold px-6 py-3 rounded-full transition-all transform hover:scale-105 shadow-lg w-full">
+            <i class="fas fa-plus-circle mr-2"></i> Add to Itinerary
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Itinerary Preview Sidebar -->
+  <div id="itinerarySidebar" class="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-xl z-40 transform translate-x-full transition-transform duration-300">
+    <div class="p-6 h-full flex flex-col">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="font-display font-bold text-2xl">Your Itinerary Preview</h3>
+        <button id="closeSidebar" class="text-gray-500 hover:text-gray-700">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="flex-1 overflow-y-auto">
+        <div class="space-y-4">
+          <!-- Sample itinerary item -->
+          <div class="border border-gray-200 rounded-lg p-4">
+            <div class="flex justify-between items-start">
+              <div>
+                <h4 class="font-bold">Day 1: Arrival in Colombo</h4>
+                <p class="text-sm text-gray-600">Evening city tour</p>
+              </div>
+              <button class="text-red-500 hover:text-red-700">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+          <!-- More items would be added dynamically -->
+        </div>
+      </div>
+      <div class="border-t border-gray-200 pt-4 mt-auto">
+        <button class="bg-primary hover:bg-opacity-90 text-white font-bold px-6 py-3 rounded-full transition-all transform hover:scale-105 shadow-lg w-full">
+          Save Itinerary
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- New Scripts -->
+  <script>
+    // Initialize 3D modal
+    let modal3DScene, modal3DCamera, modal3DRenderer;
+    
+    function initModal3D() {
+      const container = document.getElementById('modal3DView');
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+      
+      modal3DScene = new THREE.Scene();
+      modal3DCamera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+      modal3DRenderer = new THREE.WebGLRenderer({ antialias: true });
+      modal3DRenderer.setSize(width, height);
+      modal3DRenderer.setClearColor(0xf3f4f6);
+      container.innerHTML = '';
+      container.appendChild(modal3DRenderer.domElement);
+      
+      // Add lights
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+      modal3DScene.add(ambientLight);
+      
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      directionalLight.position.set(1, 1, 1);
+      modal3DScene.add(directionalLight);
+      
+      // Add controls
+      const controls = new THREE.OrbitControls(modal3DCamera, modal3DRenderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      
+      // Load model (placeholder - would be actual model in production)
+      const geometry = new THREE.BoxGeometry(1, 1, 1);
+      const material = new THREE.MeshPhongMaterial({ 
+        color: 0x005B4E,
+        specular: 0x111111,
+        shininess: 30
+      });
+      const cube = new THREE.Mesh(geometry, material);
+      modal3DScene.add(cube);
+      
+      modal3DCamera.position.z = 3;
+      
+      // Animation loop
+      function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        modal3DRenderer.render(modal3DScene, modal3DCamera);
+      }
+      animate();
+      
+      // Handle resize
+      window.addEventListener('resize', () => {
+        modal3DCamera.aspect = container.clientWidth / container.clientHeight;
+        modal3DCamera.updateProjectionMatrix();
+        modal3DRenderer.setSize(container.clientWidth, container.clientHeight);
+      });
+    }
+    
+    // Modal controls
+    document.querySelectorAll('.destination-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const modal = document.getElementById('destinationModal');
+        modal.classList.remove('pointer-events-none');
+        modal.classList.add('pointer-events-auto');
+        modal.classList.remove('opacity-0');
+        modal.classList.add('opacity-100');
+        
+        // Initialize 3D view if not already done
+        if (!modal3DScene) {
+          initModal3D();
+        }
+      });
+    });
+    
+    document.getElementById('closeModal').addEventListener('click', () => {
+      const modal = document.getElementById('destinationModal');
+      modal.classList.add('pointer-events-none');
+      modal.classList.add('opacity-0');
+      modal.classList.remove('opacity-100');
+      modal.classList.remove('pointer-events-auto');
+    });
+    
+    // Itinerary sidebar controls
+    document.getElementById('itineraryPreviewBtn').addEventListener('click', () => {
+      const sidebar = document.getElementById('itinerarySidebar');
+      sidebar.classList.remove('translate-x-full');
+    });
+    
+    document.getElementById('closeSidebar').addEventListener('click', () => {
+      const sidebar = document.getElementById('itinerarySidebar');
+      sidebar.classList.add('translate-x-full');
+    });
+    
+    // Enhanced form validation
+    const form = document.querySelector('form');
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      // Validate form
+      const nameInput = form.querySelector('input[type="text"]');
+      const emailInput = form.querySelector('input[type="email"]');
+      const arrivalDate = form.querySelector('#arrivalDate');
+      
+      if (!nameInput.value.trim()) {
+        showError(nameInput, 'Please enter your name');
+        return;
+      }
+      
+      if (!emailInput.value.trim() || !emailInput.checkValidity()) {
+        showError(emailInput, 'Please enter a valid email');
+        return;
+      }
+      
+      if (!arrivalDate.value) {
+        showError(arrivalDate, 'Please select arrival date');
+        return;
+      }
+      
+      // Form is valid - show success
+      showFormSuccess();
+    });
+    
+    function showError(input, message) {
+      const formGroup = input.closest('.form-group') || input.parentElement;
+      const errorElement = formGroup.querySelector('.error-message') || document.createElement('div');
+      errorElement.className = 'error-message text-red-500 text-sm mt-1';
+      errorElement.textContent = message;
+      
+      if (!formGroup.querySelector('.error-message')) {
+        formGroup.appendChild(errorElement);
+      }
+      
+      input.classList.add('border-red-500');
+      input.classList.remove('border-gray-300');
+    }
+    
+    function showFormSuccess() {
+      // Create success modal
+      const successModal = document.createElement('div');
+      successModal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/70';
+      successModal.innerHTML = `
+        <div class="bg-white rounded-2xl p-8 max-w-md text-center">
+          <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-check text-green-500 text-3xl"></i>
+          </div>
+          <h3 class="font-display font-bold text-2xl mb-2">Itinerary Submitted!</h3>
+          <p class="text-gray-600 mb-6">Our AI is crafting your perfect Sri Lankan adventure. You'll receive an email with your personalized itinerary shortly.</p>
+          <button id="closeSuccessModal" class="bg-primary hover:bg-opacity-90 text-white font-bold px-6 py-3 rounded-full transition-all transform hover:scale-105 shadow-lg">
+            Continue Exploring
+          </button>
+        </div>
+      `;
+      
+      document.body.appendChild(successModal);
+      
+      document.getElementById('closeSuccessModal').addEventListener('click', () => {
+        document.body.removeChild(successModal);
+      });
+    }
+    
+    // Real-time itinerary duration calculator
+    const arrivalInput = document.getElementById('arrivalDate');
+    const departureInput = document.getElementById('departureDate');
+    const durationDisplay = document.getElementById('durationDisplay');
+    
+    [arrivalInput, departureInput].forEach(input => {
+      input.addEventListener('change', updateDuration);
+    });
+    
+    function updateDuration() {
+      if (arrivalInput.value && departureInput.value) {
+        const arrival = new Date(arrivalInput.value);
+        const departure = new Date(departureInput.value);
+        const diffTime = Math.abs(departure - arrival);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        
+        durationDisplay.textContent = `${diffDays} days`;
+        durationDisplay.classList.remove('hidden');
+      } else {
+        durationDisplay.classList.add('hidden');
+      }
+    }
+    
+    // Interest card animations
+    const interestCards = document.querySelectorAll('.interest-card');
+    interestCards.forEach(card => {
+      card.addEventListener('mouseenter', () => {
+        if (!card.classList.contains('selected')) {
+          card.style.transform = 'translateY(-5px) scale(1.03)';
+          card.style.boxShadow = '0 15px 30px rgba(0, 0, 0, 0.1)';
+        }
+      });
+      
+      card.addEventListener('mouseleave', () => {
+        if (!card.classList.contains('selected')) {
+          card.style.transform = '';
+          card.style.boxShadow = '';
+        }
+      });
+    });
+  </script>
+  
+  <!-- Add this to the form section where dates are selected -->
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h4 class="font-bold text-lg">Trip Duration</h4>
+      <p id="durationDisplay" class="text-primary font-semibold hidden"></p>
+    </div>
+    <button id="itineraryPreviewBtn" class="flex items-center text-primary hover:text-primary-dark">
+      <i class="fas fa-eye mr-2"></i> Preview Itinerary
+    </button>
+  </div>
+  
+  <!-- Add this to the head section for additional fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">

@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plan Your Sri Lankan Adventure | Serendib</title>
+  <meta name="description" content="Create your perfect Sri Lankan itinerary with our AI-powered trip planner">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#005B4E',
+            secondary: '#FF7A45',
+            accent: '#FFC837',
+            dark: '#1A2E35',
+            light: '#F5F7FA'
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Poppins', 'sans-serif']
+          },
+          animation: {
+            'float': 'float 6s ease-in-out infinite',
+            'pulse-slow': 'pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-10px)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Datepicker -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  
+  <!-- Three.js Import Map -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.152.2/build/three.module.js",
+        "GLTFLoader": "https://unpkg.com/three@0.152.2/examples/jsm/loaders/GLTFLoader.js",
+        "OrbitControls": "https://unpkg.com/three@0.152.2/examples/jsm/controls/OrbitControls.js"
+      }
+    }
+  </script>
+  
+  <!-- Custom CSS -->
+  <style>
+    .form-section {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    
+    .interest-card {
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+    }
+    
+    .interest-card:hover {
+      transform: translateY(-5px) scale(1.03);
+    }
+    
+    .interest-card.selected {
+      border-color: #FF7A45;
+      box-shadow: 0 10px 25px rgba(255, 122, 69, 0.2);
+    }
+    
+    .progress-bar {
+      transition: width 0.5s ease;
+    }
+    
+    .step-indicator.active {
+      background-color: #005B4E;
+      color: white;
+    }
+    
+    .step-indicator.completed {
+      background-color: #FFC837;
+      color: #1A2E35;
+    }
+    
+    /* Custom checkbox */
+    .custom-checkbox {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #CBD5E0;
+      border-radius: 4px;
+      outline: none;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s;
+    }
+    
+    .custom-checkbox:checked {
+      background-color: #005B4E;
+      border-color: #005B4E;
+    }
+    
+    .custom-checkbox:checked::after {
+      content: '\f00c';
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      color: white;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body class="bg-light font-sans antialiased min-h-screen flex flex-col">
+  <!-- 3D Background Canvas -->
+  <canvas id="bgCanvas" class="fixed top-0 left-0 w-full h-full -z-10 opacity-20"></canvas>
+  
+  <!-- Floating Particles -->
+  <div id="particles-js" class="fixed top-0 left-0 w-full h-full -z-10"></div>
+  
+  <!-- Navigation -->
+  <header class="fixed w-full z-40 bg-white/80 backdrop-blur-md shadow-sm">
+    <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+      <a href="index.html" class="flex items-center space-x-2">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/1/11/Flag_of_Sri_Lanka.svg" alt="Sri Lanka Flag" class="h-8">
+        <span class="font-display font-bold text-2xl bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Serendib</span>
+      </a>
+      
+      <div class="hidden lg:flex items-center space-x-8">
+        <a href="index.html" class="font-medium hover:text-primary transition-colors">Home</a>
+        <a href="#" class="font-medium text-primary">Plan Trip</a>
+        <a href="#" class="font-medium hover:text-primary transition-colors">Destinations</a>
+        <a href="#" class="font-medium hover:text-primary transition-colors">Experiences</a>
+        <button id="aiTrigger" class="bg-primary text-white px-4 py-2 rounded-full flex items-center space-x-2 hover:bg-opacity-90 transition-all">
+          <i class="fas fa-robot"></i>
+          <span>AI Guide</span>
+        </button>
+      </div>
+      
+      <button id="mobileMenuButton" class="lg:hidden text-2xl">
+        <i class="fas fa-bars"></i>
+      </button>
+    </nav>
+    
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="hidden lg:hidden bg-white py-4 px-6 shadow-lg">
+      <div class="flex flex-col space-y-4">
+        <a href="index.html" class="font-medium hover:text-primary transition-colors">Home</a>
+        <a href="#" class="font-medium text-primary">Plan Trip</a>
+        <a href="#" class="font-medium hover:text-primary transition-colors">Destinations</a>
+        <a href="#" class="font-medium hover:text-primary transition-colors">Experiences</a>
+        <button id="aiTriggerMobile" class="bg-primary text-white px-4 py-2 rounded-full flex items-center justify-center space-x-2 hover:bg-opacity-90 transition-all">
+          <i class="fas fa-robot"></i>
+          <span>AI Guide</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-grow pt-24 pb-12">
+    <!-- Progress Bar -->
+    <div class="container mx-auto px-6 mb-8">
+      <div class="bg-gray-200 rounded-full h-2.5">
+        <div id="formProgress" class="progress-bar bg-primary h-2.5 rounded-full" style="width: 33%"></div>
+      </div>
+      <div class="flex justify-between mt-4">
+        <div class="step-indicator active w-8 h-8 rounded-full flex items-center justify-center font-bold">1</div>
+        <div class="step-indicator w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 border-gray-300">2</div>
+        <div class="step-indicator w-8 h-8 rounded-full flex items-center justify-center font-bold border-2 border-gray-300">3</div>
+      </div>
+    </div>
+    
+    <!-- Multi-step Form -->
+    <div class="container mx-auto px-6">
+      <div class="max-w-4xl mx-auto">
+        <!-- Step 1: Personal Details -->
+        <div id="step1" class="form-section rounded-2xl shadow-xl overflow-hidden p-8">
+          <div class="text-center mb-8">
+            <h2 class="font-display font-bold text-3xl mb-2">Tell Us About Yourself</h2>
+            <p class="text-gray-600">We'll use this information to personalize your experience</p>
+          </div>
+          
+          <form class="space-y-6">
+            <div class="grid md:grid-cols-2 gap-6">
+              <div>
+                <label class="block font-medium mb-2">Full Name</label>
+                <input type="text" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Your Name">
+              </div>
+              <div>
+                <label class="block font-medium mb-2">Email Address</label>
+                <input type="email" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="your@email.com">
+              </div>
+              <div>
+                <label class="block font-medium mb-2">Passport/ID Number</label>
+                <input type="text" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Passport or ID">
+              </div>
+              <div>
+                <label class="block font-medium mb-2">Country</label>
+                <select class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent">
+                  <option value="">Select your country</option>
+                  <option value="US">United States</option>
+                  <option value="UK">United Kingdom</option>
+                  <option value="IN">India</option>
+                  <!-- More countries would be added -->
+                </select>
+              </div>
+            </div>
+            
+            <div class="flex justify-between pt-6">
+              <div></div> <!-- Empty div for spacing -->
+              <button type="button" onclick="nextStep(1)" class="bg-primary hover:bg-opacity-90 text-white font-bold px-8 py-3 rounded-full transition-all transform hover:scale-105 shadow-lg">
+                Next: Travel Dates <i class="fas fa-arrow-right ml-2"></i>
+              </button>
+            </div>
+          </form>
+        </div>
+        
+        <!-- Step 2: Travel Dates (hidden initially) -->
+        <div id="step2" class="form-section rounded-2xl shadow-xl overflow-hidden p-8 hidden">
+          <div class="text-center mb-8">
+            <h2 class="font-display font-bold text-3xl mb-2">When Are You Traveling?</h2>
+            <p class="text-gray-600">Select your travel dates to help us plan the perfect itinerary</p>
+          </div>
+          
+          <div class="space-y-6">
+            <div class="grid md:grid-cols-2 gap-6">
+              <div>
+                <label class="block font-medium mb-2">Arrival Date</label>
+                <input type="text" id="arrivalDate" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Select date">
+              </div>
+              <div>
+                <label class="block font-medium mb-2">Departure Date</label>
+                <input type="text" id="departureDate" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Select date">
+              </div>
+            </div>
+            
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div class="flex items-start">
+                <div class="flex-shrink-0 text-blue-500 mt-1">
+                  <i class="fas fa-info-circle"></i>
+                </div>
+                <div class="ml-3">
+                  <p class="text-sm text-blue-700">
+                    Based on your selected dates, we'll recommend the best seasonal activities and weather-appropriate destinations.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="flex justify-between pt-6">
+              <button type="button" onclick="prevStep(2)" class="text-primary font-bold px-6 py-3 rounded-full transition-all transform hover:scale-105">
+                <i class="fas fa-arrow-left mr-2"></i> Back
+              </button>
+              <button type="button" onclick="nextStep(2)" class="bg-primary hover:bg-opacity-90 text-white font-bold px-8 py-3 rounded-full transition-all transform hover:scale-105 shadow-lg">
+                Next: Travel Interests <i class="fas fa-arrow-right ml-2"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 3: Travel Interests (hidden initially) -->
+        <div id="step3" class="form-section rounded-2xl shadow-xl overflow-hidden p-8 hidden">
+          <div class="text-center mb-8">
+            <h2 class="font-display font-bold text-3xl mb-2">What Are Your Interests?</h2>
+            <p class="text-gray-600">Select the types of experiences you're most excited about</p>
+          </div>
+          
+          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Beach Card -->
+            <div class="interest-card bg-white border-2 border-gray-200 rounded-xl p-4 cursor-pointer" onclick="toggleInterest(this)">
+              <div class="flex items-center mb-3">
+                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 mr-3">
+                  <i class="fas fa-umbrella-beach"></i>
+                </div>
+                <h3 class="font-bold">Beaches</h3>
+              </div>
+              <p class="text-sm text-gray-600">Pristine sandy shores and turquoise waters</p>
+              <div class="mt-3 flex justify-end">
+                <input type="checkbox" class="custom-checkbox">
+              </div>
+            </div>
+            
+            <!-- Wildlife Card -->
+            <div class="interest-card bg-white border-2 border-gray-200 rounded-xl p-4 cursor-pointer" onclick="toggleInterest(this)">
+              <div class="flex items-center mb-3">
+                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center text-green-600 mr-3">
+                  <i class="fas fa-paw"></i>
+                </div>
+                <h3 class="font-bold">Wildlife Safari</h3>
+              </div>
+              <p class="text-sm text-gray-600">Elephants, leopards and exotic birds</p>
+              <div class="mt-3 flex justify-end">
+                <input type="checkbox" class="custom-checkbox">
+              </div>
+            </div>
+            
+            <!-- Heritage Card -->
+            <div class="interest-card bg-white border-2 border-gray-200 rounded-xl p-4 cursor-pointer" onclick="toggleInterest(this)">
+              <div class="flex items-center mb-3">
+                <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center text-amber-600 mr-3">
+                  <i class="fas fa-landmark"></i>
+                </div>
+                <h3 class="font-bold">Heritage Sites</h3>
+              </div>
+              <p class="text-sm text-gray-600">Ancient cities and UNESCO World Heritage</p>
+              <div class="mt-3 flex justify-end">
+                <input type="checkbox" class="custom-checkbox">
+              </div>
+            </div>
+            
+            <!-- Hiking Card -->
+            <div class="interest-card bg-white border-2 border-gray-200 rounded-xl p-4 cursor-pointer" onclick="toggleInterest(this)">
+              <div class="flex items-center mb-3">
+                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600 mr-3">
+                  <i class="fas fa-hiking"></i>
+                </div>
+                <h3 class="font-bold">Hiking</h3>
+              </div>
+              <p class="text-sm text-gray-600">Mountain trails and scenic viewpoints</p>
+              <div class="mt-3 flex justify-end">
+                <input type="checkbox" class="custom-checkbox">
+              </div>
+            </div>
+            
+            <!-- Culture Card -->
+            <div class="interest-card bg-white border-2 border-gray-200 rounded-xl p-4 cursor-pointer" onclick="toggleInterest(this)">
+              <div class="flex items-center mb-3">
+                <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center text-red-600 mr-3">
+                  <i class="fas fa-theater-masks"></i>
+                </div>
+                <h3 class="font-bold">Local Culture</h3>
+              </div>
+              <p class="text-sm text-gray-600">Traditional festivals and village life</p>
+              <div class="mt-3 flex justify-end">
+                <input type="checkbox" class="custom-checkbox">
+              </div>
+            </div>
+            
+            <!-- Wellness Card -->
+            <div class="interest-card bg-white border-2 border-gray-200 rounded-xl p-4 cursor-pointer" onclick="toggleInterest(this)">
+              <div class="flex items-center mb-3">
+                <div class="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center text-pink-600 mr-3">
+                  <i class="fas fa-spa"></i>
+                </div>
+                <h3 class="font-bold">Wellness</h3>
+              </div>
+              <p class="text-sm text-gray-600">Ayurveda, yoga and meditation retreats</p>
+              <div class="mt-3 flex justify-end">
+                <input type="checkbox" class="custom-checkbox">
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-8">
+            <label class="block font-medium mb-2">Any special requests or requirements?</label>
+            <textarea class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary focus:border-transparent" rows="3" placeholder="Dietary needs, accessibility requirements, etc."></textarea>
+          </div>
+          
+          <div class="flex justify-between pt-6">
+            <button type="button" onclick="prevStep(3)" class="text-primary font-bold px-6 py-3 rounded-full transition-all transform hover:scale-105">
+              <i class="fas fa-arrow-left mr-2"></i> Back
+            </button>
+            <button type="button" onclick="submitForm()" class="bg-primary hover:bg-opacity-90 text-white font-bold px-8 py-3 rounded-full transition-all transform hover:scale-105 shadow-lg">
+              Generate My Itinerary <i class="fas fa-magic ml-2"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 3D Map Preview (will be populated by Three.js) -->
+    <div class="container mx-auto px-6 mt-12">
+      <div class="rounded-2xl shadow-xl overflow-hidden bg-gradient-to-br from-primary to-dark p-1">
+        <div class="bg-white p-6 rounded-xl">
+          <h3 class="font-display font-bold text-2xl mb-4">Your Sri Lanka Adventure Preview</h3>
+          <div id="mapPreview" class="h-96 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
+            <p class="text-gray-400">Your personalized itinerary map will appear here</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-dark text-white py-12">
+    <div class="container mx-auto px-6">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <h3 class="font-display font-bold text-xl mb-4">Serendib</h3>
+          <p class="text-gray-400">Your complete AI-powered guide to experiencing Sri Lanka's wonders.</p>
+        </div>
+        
+        <div>
+          <h4 class="font-bold mb-4">Explore</h4>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Destinations</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Experiences</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Travel Guides</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Cultural Tips</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="font-bold mb-4">Services</h4>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Visa Assistance</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Hotel Booking</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Transport</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Tour Packages</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="font-bold mb-4">Connect</h4>
+          <div class="flex space-x-4 mb-4">
+            <a href="#" class="text-gray-400 hover:text-white text-xl transition-colors"><i class="fab fa-facebook"></i></a>
+            <a href="#" class="text-gray-400 hover:text-white text-xl transition-colors"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="text-gray-400 hover:text-white text-xl transition-colors"><i class="fab fa-twitter"></i></a>
+            <a href="#" class="text-gray-400 hover:text-white text-xl transition-colors"><i class="fab fa-youtube"></i></a>
+          </div>
+          <p class="text-gray-400">support@serendib.lk</p>
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500">
+        <p>© 2023 Serendib Tourism AI. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- AI Assistant Panel -->
+  <div id="aiAssistant" class="fixed bottom-8 right-8 z-50 transform transition-all duration-300 translate-y-32 opacity-0">
+    <div class="bg-white rounded-2xl shadow-2xl w-96 overflow-hidden">
+      <div class="bg-gradient-to-r from-primary to-secondary p-4 flex justify-between items-center">
+        <h3 class="text-white font-bold">Serendib AI Guide</h3>
+        <button id="closeAI" class="text-white hover:text-gray-200">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="p-4 h-96 overflow-y-auto" id="aiChatMessages">
+        <div class="flex mb-4">
+          <div class="bg-primary/10 p-3 rounded-full mr-3">
+            <i class="fas fa-robot text-primary"></i>
+          </div>
+          <div class="bg-gray-100 p-3 rounded-lg max-w-xs">
+            <p>Hello! I can help you plan your perfect Sri Lankan trip. Need recommendations or have questions?</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="p-4 border-t border-gray-200">
+        <div class="flex">
+          <input type="text" placeholder="Ask me anything about Sri Lanka..." class="flex-1 border border-gray-300 rounded-l-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          <button class="bg-primary text-white px-4 py-2 rounded-r-lg hover:bg-opacity-90">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <!-- Datepicker -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  
+  <!-- particles.js for background -->
+  <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+  
+  <!-- Three.js via ES Modules -->
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'GLTFLoader';
+    import { OrbitControls } from 'OrbitControls';
+    
+    // Initialize Three.js for background
+    const bgCanvas = document.getElementById('bgCanvas');
+    const renderer = new THREE.WebGLRenderer({ canvas: bgCanvas, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 5;
+    
+    // Add floating geometric elements
+    const geometry = new THREE.IcosahedronGeometry(1, 0);
+    const material = new THREE.MeshBasicMaterial({ 
+      color: 0x005B4E,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.3
+    });
+    
+    const icosahedrons = [];
+    for (let i = 0; i < 5; i++) {
+      const icosahedron = new THREE.Mesh(geometry, material);
+      icosahedron.position.x = (Math.random() - 0.5) * 10;
+      icosahedron.position.y = (Math.random() - 0.5) * 10;
+      icosahedron.position.z = (Math.random() - 0.5) * 10;
+      icosahedron.scale.setScalar(Math.random() * 0.5 + 0.5);
+      scene.add(icosahedron);
+      icosahedrons.push(icosahedron);
+    }
+    
+    function animate() {
+      requestAnimationFrame(animate);
+      
+      icosahedrons.forEach(obj => {
+        obj.rotation.x += 0.001;
+        obj.rotation.y += 0.002;
+      });
+      
+      renderer.render(scene, camera);
+    }
+    
+    animate();
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+    
+    // Initialize map preview
+    const initMapPreview = () => {
+      const container = document.getElementById('mapPreview');
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+      
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+      const renderer = new THREE.WebGLRenderer({ alpha: true });
+      renderer.setSize(width, height);
+      renderer.setClearColor(0x000000, 0);
+      container.innerHTML = '';
+      container.appendChild(renderer.domElement);
+      
+      // Add lights
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+      scene.add(ambientLight);
+      
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      directionalLight.position.set(1, 1, 1);
+      scene.add(directionalLight);
+      
+      // Create a simple Sri Lanka map outline
+      const shape = new THREE.Shape();
+      // Simplified Sri Lanka shape coordinates would go here
+      // This is just a placeholder - in a real app you'd use accurate geo coordinates
+      shape.moveTo(0, 0);
+      shape.lineTo(2, 0);
+      shape.lineTo(2, 1);
+      shape.lineTo(1, 2);
+      shape.lineTo(0, 1);
+      shape.lineTo(0, 0);
+      
+      const extrudeSettings = {
+        depth: 0.1,
+        bevelEnabled: true,
+        bevelThickness: 0.1,
+        bevelSize: 0.1,
+        bevelSegments: 1
+      };
+      
+      const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+      const material = new THREE.MeshPhongMaterial({
+        color: 0x005B4E,
+        specular: 0x111111,
+        shininess: 30
+      });
+      
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.rotation.x = Math.PI / 2;
+      scene.add(mesh);
+      
+      camera.position.z = 5;
+      
+      // Animation loop
+      const animate = () => {
+        requestAnimationFrame(animate);
+        mesh.rotation.y += 0.005;
+        renderer.render(scene, camera);
+      };
+      animate();
+    };
+    
+    // Initialize when step 3 is active
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (!mutation.target.classList.contains('hidden')) {
+          initMapPreview();
+          observer.disconnect();
+        }
+      });
+    });
+    
+    observer.observe(document.getElementById('step3'), {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+  </script>
+  
+  <!-- Main JavaScript -->
+  <script>
+    // Initialize date picker
+    flatpickr("#arrivalDate", {
+      minDate: "today",
+      dateFormat: "Y-m-d",
+      onChange: function(selectedDates, dateStr, instance) {
+        const departurePicker = document.querySelector("#departureDate")._flatpickr;
+        departurePicker.set("minDate", dateStr);
+      }
+    });
+    
+    flatpickr("#departureDate", {
+      minDate: new Date().fp_incr(1),
+      dateFormat: "Y-m-d"
+    });
+    
+    // Form navigation
+    function nextStep(currentStep) {
+      document.getElementById(`step${currentStep}`).classList.add('hidden');
+      document.getElementById(`step${currentStep + 1}`).classList.remove('hidden');
+      
+      // Update progress bar
+      const progressPercentage = (currentStep / 3) * 100;
+      document.getElementById('formProgress').style.width = `${progressPercentage}%`;
+      
+      // Update step indicators
+      document.querySelectorAll('.step-indicator').forEach((el, index) => {
+        if (index < currentStep) {
+          el.classList.add('completed');
+          el.classList.remove('active');
+        } else if (index === currentStep) {
+          el.classList.add('active');
+          el.classList.remove('completed');
+        }
+      });
+    }
+    
+    function prevStep(currentStep) {
+      document.getElementById(`step${currentStep}`).classList.add('hidden');
+      document.getElementById(`step${currentStep - 1}`).classList.remove('hidden');
+      
+      // Update progress bar
+      const progressPercentage = ((currentStep - 2) / 3) * 100;
+      document.getElementById('formProgress').style.width = `${progressPercentage}%`;
+      
+      // Update step indicators
+      document.querySelectorAll('.step-indicator').forEach((el, index) => {
+        if (index < currentStep - 1) {
+          el.classList.add('completed');
+          el.classList.remove('active');
+        } else if (index === currentStep - 1) {
+          el.classList.add('active');
+          el.classList.remove('completed');
+        }
+      });
+    }
+    
+    function submitForm() {
+      // In a real implementation, this would submit the form data
+      alert('Your itinerary is being generated! Our AI is crafting your perfect Sri Lankan adventure.');
+    }
+    
+    // Toggle interest cards
+    function toggleInterest(card) {
+      const checkbox = card.querySelector('input[type="checkbox"]');
+      checkbox.checked = !checkbox.checked;
+      
+      if (checkbox.checked) {
+        card.classList.add('selected');
+      } else {
+        card.classList.remove('selected');
+      }
+    }
+    
+    // AI Assistant toggle
+    const aiTrigger = document.getElementById('aiTrigger') || document.getElementById('aiTriggerMobile');
+    const closeAI = document.getElementById('closeAI');
+    const aiAssistant = document.getElementById('aiAssistant');
+    
+    [aiTrigger, closeAI].forEach(el => {
+      if (el) el.addEventListener('click', () => {
+        aiAssistant.classList.toggle('translate-y-32');
+        aiAssistant.classList.toggle('opacity-0');
+        aiAssistant.classList.toggle('translate-y-0');
+        aiAssistant.classList.toggle('opacity-100');
+      });
+    });
+    
+    // Initialize particles.js
+    particlesJS('particles-js', {
+      "particles": {
+        "number": { "value": 80, "density": { "enable": true, "value_area": 800 } },
+        "color": { "value": "#005B4E" },
+        "shape": { "type": "circle", "stroke": { "width": 0, "color": "#000000" } },
+        "opacity": { "value": 0.3, "random": true },
+        "size": { "value": 3, "random": true },
+        "line_linked": { "enable": true, "distance": 150, "color": "#005B4E", "opacity": 0.2, "width": 1 },
+        "move": { "enable": true, "speed": 2, "direction": "none", "random": true, "straight": false, "out_mode": "out" }
+      },
+      "interactivity": {
+        "detect_on": "canvas",
+        "events": {
+          "onhover": { "enable": true, "mode": "grab" },
+          "onclick": { "enable": true, "mode": "push" }
+        },
+        "modes": { "grab": { "distance": 140, "line_linked": { "opacity": 0.5 } } }
+      }
+    });
+    
+    // Mobile menu toggle
+    document.getElementById('mobileMenuButton').addEventListener('click', () => {
+      const menu = document.getElementById('mobileMenu');
+      menu.classList.toggle('hidden');
+    });
+  </script>
+</body>
+</html>

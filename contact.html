@@ -1,0 +1,537 @@
+<!-- Add before closing </body> tag -->
+
+<!-- Packing Recommendation Modal -->
+<div id="packingModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl h-[80vh] overflow-hidden relative">
+      <button id="closePackingModal" class="absolute top-4 right-4 z-10 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg">
+        <i class="fas fa-times text-gray-700"></i>
+      </button>
+      <div class="h-full flex flex-col">
+        <div class="p-6 border-b border-gray-200">
+          <h3 class="font-display font-bold text-2xl">Packing Recommendations</h3>
+          <p class="text-gray-600">Customized for your trip dates and activities</p>
+        </div>
+        <div class="flex-1 overflow-y-auto p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h4 class="font-bold text-lg mb-3 flex items-center">
+                <i class="fas fa-tshirt text-primary mr-2"></i> Clothing Essentials
+              </h4>
+              <ul class="space-y-2" id="clothingList">
+                <!-- Dynamically generated -->
+              </ul>
+            </div>
+            <div>
+              <h4 class="font-bold text-lg mb-3 flex items-center">
+                <i class="fas fa-suitcase text-primary mr-2"></i> Gear & Accessories
+              </h4>
+              <ul class="space-y-2" id="gearList">
+                <!-- Dynamically generated -->
+              </ul>
+            </div>
+          </div>
+          
+          <div class="mt-8">
+            <h4 class="font-bold text-lg mb-3 flex items-center">
+              <i class="fas fa-exclamation-triangle text-amber-500 mr-2"></i> Special Considerations
+            </h4>
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4" id="specialNotes">
+              <!-- Dynamically generated -->
+            </div>
+          </div>
+        </div>
+        <div class="p-4 border-t border-gray-200 bg-gray-50 flex justify-between">
+          <button class="text-primary font-medium px-4 py-2 rounded-full border border-primary hover:bg-primary hover:text-white transition-colors">
+            <i class="fas fa-print mr-2"></i> Print List
+          </button>
+          <button class="bg-primary hover:bg-opacity-90 text-white font-bold px-6 py-2 rounded-full transition-all transform hover:scale-105 shadow-lg">
+            <i class="fas fa-check-circle mr-2"></i> Mark as Packed
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Budget Planner Tool -->
+  <div id="budgetModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[80vh] overflow-hidden relative">
+      <button id="closeBudgetModal" class="absolute top-4 right-4 z-10 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg">
+        <i class="fas fa-times text-gray-700"></i>
+      </button>
+      <div class="h-full flex flex-col">
+        <div class="p-6 border-b border-gray-200">
+          <h3 class="font-display font-bold text-2xl">Budget Planner</h3>
+          <p class="text-gray-600">Estimate and track your trip expenses</p>
+        </div>
+        <div class="flex-1 overflow-y-auto p-6">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2">
+              <div class="bg-gray-50 rounded-xl p-4 mb-6">
+                <h4 class="font-bold text-lg mb-3">Daily Budget Breakdown</h4>
+                <canvas id="budgetChart" height="200"></canvas>
+              </div>
+              
+              <div class="space-y-4">
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div class="flex items-center">
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 mr-3">
+                      <i class="fas fa-hotel"></i>
+                    </div>
+                    <span>Accommodation</span>
+                  </div>
+                  <div class="flex items-center">
+                    <span class="mr-4">$<span id="accommodationCost">120</span></span>
+                    <input type="range" min="50" max="500" value="120" class="w-32 budget-slider" data-category="accommodation">
+                  </div>
+                </div>
+                
+                <!-- More budget items would be here -->
+              </div>
+            </div>
+            
+            <div>
+              <div class="bg-gray-50 rounded-xl p-4 sticky top-4">
+                <h4 class="font-bold text-lg mb-3">Budget Summary</h4>
+                <div class="space-y-3 mb-4">
+                  <div class="flex justify-between">
+                    <span>Total Trip Duration:</span>
+                    <span id="budgetDays">7 days</span>
+                  </div>
+                  <div class="flex justify-between font-medium">
+                    <span>Estimated Total:</span>
+                    <span class="text-primary">$<span id="totalBudget">840</span></span>
+                  </div>
+                </div>
+                
+                <div class="mt-6">
+                  <h5 class="font-bold mb-2">Budget Level</h5>
+                  <div class="flex items-center mb-1">
+                    <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                    <span class="text-sm">Comfortable ($100-150/day)</span>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-gradient-to-r from-green-400 to-primary h-2 rounded-full" style="width: 60%"></div>
+                  </div>
+                </div>
+                
+                <button class="mt-6 w-full bg-primary hover:bg-opacity-90 text-white font-bold px-6 py-3 rounded-full transition-all transform hover:scale-105 shadow-lg">
+                  <i class="fas fa-save mr-2"></i> Save Budget Plan
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Travel Dashboard -->
+  <div id="dashboardModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] overflow-hidden relative">
+      <button id="closeDashboardModal" class="absolute top-4 right-4 z-10 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg">
+        <i class="fas fa-times text-gray-700"></i>
+      </button>
+      <div class="h-full flex flex-col">
+        <div class="p-6 border-b border-gray-200">
+          <h3 class="font-display font-bold text-2xl">Your Sri Lanka Travel Dashboard</h3>
+          <p class="text-gray-600">All your trip details in one place</p>
+        </div>
+        <div class="flex-1 overflow-y-auto p-6">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Itinerary Summary -->
+            <div class="lg:col-span-2 bg-gray-50 rounded-xl p-6">
+              <h4 class="font-bold text-lg mb-4 flex items-center">
+                <i class="fas fa-route text-primary mr-2"></i> Trip Itinerary
+              </h4>
+              <div class="space-y-4" id="dashboardItinerary">
+                <!-- Itinerary items will be added here -->
+              </div>
+            </div>
+            
+            <!-- Trip Overview -->
+            <div class="space-y-6">
+              <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                <h4 class="font-bold text-lg mb-4">Trip Overview</h4>
+                <div class="space-y-3">
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Travel Dates:</span>
+                    <span id="dashboardDates">Jan 15-22, 2024</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Travelers:</span>
+                    <span id="dashboardTravelers">2 adults</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Interests:</span>
+                    <span id="dashboardInterests">Beaches, Heritage</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Progress Trackers -->
+              <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                <h4 class="font-bold text-lg mb-4">Trip Preparation</h4>
+                <div class="space-y-4">
+                  <div>
+                    <div class="flex justify-between mb-1">
+                      <span class="text-sm font-medium">Booking Progress</span>
+                      <span class="text-sm font-medium">60%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                      <div class="bg-primary h-2.5 rounded-full" style="width: 60%"></div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div class="flex justify-between mb-1">
+                      <span class="text-sm font-medium">Packing Progress</span>
+                      <span class="text-sm font-medium">20%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                      <div class="bg-amber-400 h-2.5 rounded-full" style="width: 20%"></div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div class="flex justify-between mb-1">
+                      <span class="text-sm font-medium">Budget Planning</span>
+                      <span class="text-sm font-medium">75%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                      <div class="bg-green-500 h-2.5 rounded-full" style="width: 75%"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Quick Actions -->
+              <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                <h4 class="font-bold text-lg mb-4">Quick Actions</h4>
+                <div class="grid grid-cols-2 gap-3">
+                  <button class="flex flex-col items-center justify-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                    <i class="fas fa-ticket-alt text-blue-600 text-xl mb-2"></i>
+                    <span class="text-sm">Book Activities</span>
+                  </button>
+                  <button class="flex flex-col items-center justify-center p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
+                    <i class="fas fa-suitcase text-green-600 text-xl mb-2"></i>
+                    <span class="text-sm">Packing List</span>
+                  </button>
+                  <button class="flex flex-col items-center justify-center p-3 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
+                    <i class="fas fa-exchange-alt text-purple-600 text-xl mb-2"></i>
+                    <span class="text-sm">Currency Converter</span>
+                  </button>
+                  <button class="flex flex-col items-center justify-center p-3 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors">
+                    <i class="fas fa-share-alt text-amber-600 text-xl mb-2"></i>
+                    <span class="text-sm">Share Trip</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Social Sharing -->
+          <div class="mt-8 bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+            <h4 class="font-bold text-lg mb-4 flex items-center">
+              <i class="fas fa-share-alt text-primary mr-2"></i> Share Your Trip
+            </h4>
+            <div class="flex flex-wrap gap-3">
+              <button class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-full">
+                <i class="fab fa-facebook-f mr-2"></i> Facebook
+              </button>
+              <button class="flex items-center px-4 py-2 bg-pink-600 text-white rounded-full">
+                <i class="fab fa-instagram mr-2"></i> Instagram
+              </button>
+              <button class="flex items-center px-4 py-2 bg-blue-400 text-white rounded-full">
+                <i class="fab fa-twitter mr-2"></i> Twitter
+              </button>
+              <button class="flex items-center px-4 py-2 bg-gray-800 text-white rounded-full">
+                <i class="fas fa-envelope mr-2"></i> Email
+              </button>
+              <button class="flex items-center px-4 py-2 bg-gray-200 rounded-full">
+                <i class="fas fa-link mr-2"></i> Copy Link
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- New Scripts -->
+  <script>
+    // Packing list generator
+    function generatePackingList() {
+      const activities = Array.from(document.querySelectorAll('.interest-card input:checked'))
+        .map(el => el.closest('.interest-card').querySelector('h3').textContent);
+      
+      const dates = {
+        arrival: document.getElementById('arrivalDate').value,
+        departure: document.getElementById('departureDate').value
+      };
+      
+      // Base clothing items
+      const baseClothing = [
+        "Lightweight, breathable clothing",
+        "Comfortable walking shoes",
+        "Sun hat or cap",
+        "Sunglasses with UV protection"
+      ];
+      
+      // Activity-specific items
+      const activityGear = {
+        "Beaches": ["Swimwear", "Sandals", "Beach towel", "Waterproof phone case"],
+        "Wildlife Safari": ["Neutral-colored clothing", "Binoculars", "Camera with zoom lens"],
+        "Hiking": ["Hiking boots", "Moisture-wicking clothes", "Backpack", "Trekking poles"]
+      };
+      
+      // Special considerations
+      let specialNotes = [];
+      const arrivalMonth = new Date(dates.arrival).getMonth();
+      
+      if (arrivalMonth >= 5 && arrivalMonth <= 9) {
+        specialNotes.push("Southwest monsoon season - pack a light rain jacket");
+      }
+      
+      if (activities.includes("Religious Places")) {
+        specialNotes.push("Modest clothing required for temple visits (shoulders and knees covered)");
+      }
+      
+      // Populate lists
+      const clothingList = document.getElementById('clothingList');
+      clothingList.innerHTML = baseClothing.map(item => `
+        <li class="flex items-center">
+          <input type="checkbox" class="mr-3 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary">
+          ${item}
+        </li>
+      `).join('');
+      
+      const gearList = document.getElementById('gearList');
+      let allGear = ["Universal power adapter", "Sunscreen (SPF 30+)", "Insect repellent"];
+      
+      activities.forEach(activity => {
+        if (activityGear[activity]) {
+          allGear = [...allGear, ...activityGear[activity]];
+        }
+      });
+      
+      gearList.innerHTML = allGear.map(item => `
+        <li class="flex items-center">
+          <input type="checkbox" class="mr-3 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary">
+          ${item}
+        </li>
+      `).join('');
+      
+      const specialNotesEl = document.getElementById('specialNotes');
+      specialNotesEl.innerHTML = specialNotes.length > 0 ? 
+        specialNotes.map(note => `<p class="flex items-start"><i class="fas fa-info-circle mt-1 mr-2 text-amber-500"></i>${note}</p>`).join('') :
+        '<p>No special considerations for your selected dates and activities</p>';
+    }
+    
+    // Budget planner
+    function initBudgetPlanner() {
+      const budgetChart = new Chart(
+        document.getElementById('budgetChart'),
+        {
+          type: 'doughnut',
+          data: {
+            labels: ['Accommodation', 'Food', 'Transport', 'Activities', 'Shopping'],
+            datasets: [{
+              data: [30, 25, 20, 15, 10],
+              backgroundColor: [
+                '#005B4E',
+                '#FF7A45',
+                '#FFC837',
+                '#1A2E35',
+                '#F5F7FA'
+              ],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: 'right'
+              }
+            }
+          }
+        }
+      );
+      
+      // Update budget when sliders change
+      document.querySelectorAll('.budget-slider').forEach(slider => {
+        slider.addEventListener('input', function() {
+          const category = this.dataset.category;
+          const value = this.value;
+          
+          // Update displayed value
+          document.getElementById(`${category}Cost`).textContent = value;
+          
+          // Recalculate total
+          updateTotalBudget();
+        });
+      });
+    }
+    
+    function updateTotalBudget() {
+      const days = parseInt(document.getElementById('budgetDays').textContent);
+      const accommodation = parseInt(document.getElementById('accommodationCost').textContent);
+      // Would sum all categories in real implementation
+      const total = days * accommodation; // Simplified calculation
+      
+      document.getElementById('totalBudget').textContent = total;
+    }
+    
+    // Dashboard functions
+    function initDashboard() {
+      // Populate itinerary
+      const itineraryContainer = document.getElementById('dashboardItinerary');
+      // In real app this would come from user's saved itinerary
+      const sampleItinerary = [
+        {
+          day: "Day 1",
+          title: "Arrival in Colombo",
+          activities: ["Airport transfer", "City tour", "Dinner at local restaurant"]
+        },
+        {
+          day: "Day 2",
+          title: "Colombo to Sigiriya",
+          activities: ["Travel to Sigiriya", "Afternoon climb", "Cultural show"]
+        }
+      ];
+      
+      itineraryContainer.innerHTML = sampleItinerary.map(item => `
+        <div class="border-l-4 border-primary pl-4 py-2">
+          <h5 class="font-bold">${item.day}: ${item.title}</h5>
+          <ul class="list-disc list-inside text-sm text-gray-600 mt-1">
+            ${item.activities.map(act => `<li>${act}</li>`).join('')}
+          </ul>
+        </div>
+      `).join('');
+      
+      // Populate trip overview
+      document.getElementById('dashboardDates').textContent = 
+        `${document.getElementById('arrivalDate').value} to ${document.getElementById('departureDate').value}`;
+      
+      const interests = Array.from(document.querySelectorAll('.interest-card input:checked'))
+        .map(el => el.closest('.interest-card').querySelector('h3').textContent)
+        .join(', ');
+      document.getElementById('dashboardInterests').textContent = interests;
+    }
+    
+    // Modal controls
+    document.getElementById('packingListBtn').addEventListener('click', () => {
+      const modal = document.getElementById('packingModal');
+      generatePackingList();
+      modal.classList.remove('pointer-events-none');
+      modal.classList.add('pointer-events-auto');
+      modal.classList.remove('opacity-0');
+      modal.classList.add('opacity-100');
+    });
+    
+    document.getElementById('closePackingModal').addEventListener('click', () => {
+      const modal = document.getElementById('packingModal');
+      modal.classList.add('pointer-events-none');
+      modal.classList.add('opacity-0');
+      modal.classList.remove('opacity-100');
+      modal.classList.remove('pointer-events-auto');
+    });
+    
+    document.getElementById('budgetPlannerBtn').addEventListener('click', () => {
+      const modal = document.getElementById('budgetModal');
+      initBudgetPlanner();
+      modal.classList.remove('pointer-events-none');
+      modal.classList.add('pointer-events-auto');
+      modal.classList.remove('opacity-0');
+      modal.classList.add('opacity-100');
+    });
+    
+    document.getElementById('closeBudgetModal').addEventListener('click', () => {
+      const modal = document.getElementById('budgetModal');
+      modal.classList.add('pointer-events-none');
+      modal.classList.add('opacity-0');
+      modal.classList.remove('opacity-100');
+      modal.classList.remove('pointer-events-auto');
+    });
+    
+    document.getElementById('viewDashboardBtn').addEventListener('click', () => {
+      const modal = document.getElementById('dashboardModal');
+      initDashboard();
+      modal.classList.remove('pointer-events-none');
+      modal.classList.add('pointer-events-auto');
+      modal.classList.remove('opacity-0');
+      modal.classList.add('opacity-100');
+    });
+    
+    document.getElementById('closeDashboardModal').addEventListener('click', () => {
+      const modal = document.getElementById('dashboardModal');
+      modal.classList.add('pointer-events-none');
+      modal.classList.add('opacity-0');
+      modal.classList.remove('opacity-100');
+      modal.classList.remove('pointer-events-auto');
+    });
+    
+    // Social sharing
+    document.querySelectorAll('[data-share]').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const platform = this.dataset.share;
+        // In real app would use platform-specific APIs
+        alert(`Sharing to ${platform} would be implemented here`);
+      });
+    });
+  </script>
+  
+  <!-- Add these buttons to your form navigation area -->
+  <div class="flex flex-wrap justify-center gap-4 mt-8">
+    <button id="packingListBtn" type="button" class="bg-white border border-primary text-primary hover:bg-primary hover:text-white font-bold px-6 py-3 rounded-full transition-all transform hover:scale-105 shadow-lg">
+      <i class="fas fa-suitcase mr-2"></i> Packing List
+    </button>
+    <button id="budgetPlannerBtn" type="button" class="bg-white border border-primary text-primary hover:bg-primary hover:text-white font-bold px-6 py-3 rounded-full transition-all transform hover:scale-105 shadow-lg">
+      <i class="fas fa-calculator mr-2"></i> Budget Planner
+    </button>
+    <button id="viewDashboardBtn" type="button" class="bg-primary hover:bg-opacity-90 text-white font-bold px-6 py-3 rounded-full transition-all transform hover:scale-105 shadow-lg">
+      <i class="fas fa-tachometer-alt mr-2"></i> View Dashboard
+    </button>
+  </div>
+  
+  <!-- Additional CSS -->
+  <style>
+    .budget-slider {
+      -webkit-appearance: none;
+      height: 6px;
+      border-radius: 3px;
+      background: #d1d5db;
+      outline: none;
+    }
+    
+    .budget-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #005B4E;
+      cursor: pointer;
+    }
+    
+    .budget-slider::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #005B4E;
+      cursor: pointer;
+    }
+    
+    #dashboardItinerary div {
+      transition: all 0.2s;
+    }
+    
+    #dashboardItinerary div:hover {
+      transform: translateX(3px);
+    }
+    
+    [data-share="facebook"] { background-color: #3b5998; }
+    [data-share="twitter"] { background-color: #1da1f2; }
+    [data-share="instagram"] { background: linear-gradient(45deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d); }
+    [data-share="whatsapp"] { background-color: #25d366; }
+  </style>
